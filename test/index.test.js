@@ -503,3 +503,72 @@ test('scan handles optional options', t => {
   t.doesNotThrow(() => j.scan({ a: 'b' }))
   t.end()
 })
+test('deepClone', t => {
+  t.test('clones a simple object', t => {
+    const obj = { a: 1, b: 2 }
+    const cloned = j.deepClone(obj)
+    t.deepEqual(cloned, obj)
+    t.notEqual(cloned, obj) // Ensure it's a different object
+    t.end()
+  })
+
+  t.test('clones nested objects', t => {
+    const obj = { a: 1, b: { c: 2 } }
+    const cloned = j.deepClone(obj)
+    t.deepEqual(cloned, obj)
+    t.notEqual(cloned, obj) // Ensure it's a different object
+    t.notEqual(cloned.b, obj.b) // Ensure nested object is also cloned
+    t.end()
+  })
+
+  t.test('clones arrays', t => {
+    const arr = [1, [2, 3]]
+    const cloned = j.deepClone(arr)
+    t.deepEqual(cloned, arr)
+    t.notEqual(cloned, arr) // Ensure it's a different object
+    t.notEqual(cloned[1], arr[1]) // Ensure nested array is also cloned
+    t.end()
+  })
+
+  t.test('correctly handles circular references', t => {
+    const obj = { a: 1 }
+    obj.self = obj
+    const cloned = j.deepClone(obj)
+    t.deepEqual(cloned, obj)
+    t.notEqual(cloned, obj) // Ensure it's a different object
+    t.deepEqual(cloned.self, cloned) // Ensure circular reference is preserved
+    t.end()
+  })
+
+  t.test('clones objects with functions', t => {
+    const obj = { a: 1, b: function() { return this.a } }
+    const cloned = j.deepClone(obj)
+    t.deepEqual(cloned.a, obj.a)
+    t.end()
+  })
+
+  t.test('clones objects with special properties', t => {
+    const obj = Object.create({ prototypeProperty: 1 })
+    obj.ownProperty = 2
+    const cloned = j.deepClone(obj)
+    t.deepEqual(cloned.ownProperty, obj.ownProperty)
+    t.notOk(cloned.prototypeProperty) 
+    t.end()
+  })
+
+  t.test('clones complex objects', t => {
+    const obj = {
+      a: [1, { b: 2 }],
+      c: { d: [3, 4] }
+    }
+    const cloned = j.deepClone(obj)
+    t.deepEqual(cloned, obj)
+    t.notEqual(cloned, obj) // Ensure it's a different object
+    t.notEqual(cloned.a, obj.a) // Ensure nested array is cloned
+    t.notEqual(cloned.c, obj.c) // Ensure nested object is cloned
+    t.end()
+  })
+
+  t.end()
+})
+
