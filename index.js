@@ -118,9 +118,42 @@ function safeParse (text, reviver) {
     Error.stackTraceLimit = stackTraceLimit
   }
 }
+function deepClone(obj) {
+  const map = new WeakMap();
 
+  function clone(item) {
+    if (item === null || typeof item !== 'object') {
+      return item;
+    }
+
+    if (map.has(item)) {
+      return map.get(item);
+    }
+
+    if (Array.isArray(item)) {
+      const arrCopy = [];
+      map.set(item, arrCopy);
+      for (const element of item) {
+        arrCopy.push(clone(element));
+      }
+      return arrCopy;
+    }
+
+    const objCopy = {};
+    map.set(item, objCopy);
+    for (const key in item) {
+      if (Object.prototype.hasOwnProperty.call(item, key)) {
+        objCopy[key] = clone(item[key]);
+      }
+    }
+    return objCopy;
+  }
+
+  return clone(obj);
+}
 module.exports = parse
 module.exports.default = parse
 module.exports.parse = parse
 module.exports.safeParse = safeParse
 module.exports.scan = filter
+module.exports.deepClone = deepClone
